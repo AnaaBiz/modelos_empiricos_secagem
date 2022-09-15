@@ -1,0 +1,328 @@
+---
+title: "Modelos empíricos de secagem"
+author: "Ana Paula Biz"
+date: '2022-09-14'
+
+Modelos: Page, Newton, Midilli, Henderson and Pabis, Logarítmico.
+---
+
+Carregar pacotes
+```{r}
+library(Metrics)
+library(ggplot2)
+```
+
+Dados experimentais
+```{r}
+#Tempo (h)
+x <- c(0, 4, 8, 12, 16, 20, 24)
+
+#Moisture ratio
+y <- c(1, 0.1141, 0.0041, 0.0027, 0.0016, 0.0002, 0)
+```
+
+Tabela de dados
+```{r}
+dados <- data.frame(x, y)
+```
+
+Modelo de PAGE -- MR=e^(-k(t)^n )
+```{r}
+page = nls(formula = y ~ exp(-k*(I(x^n))),
+           data = dados, start = list(k = 0.5, n = 1), trace = TRUE)
+```
+
+Parâmetros do modelo
+```{r}
+summary(page)
+```
+
+Avaliação do modelo (R - correlação e RMSE) e armazenando em variáveis
+```{r}
+r_page <- cor(y, predict(page))
+rmse_page <- rmse(y, predict(page))
+
+r_page
+rmse_page
+```
+
+Gráfico: dados experimentais e curva do modelo ajustado.
+```{r}
+#Dados experimentais:
+plot(dados, 
+     xlab = "Time (h)",
+     ylab = "Moisture ratio",
+     cex = 1.5)   #altera o tamanho do símbolo
+
+#Modelo ajustado
+curve((exp(-coef(page)[1] * (x^coef(page)[2]))),
+      add = TRUE, col = "red")
+
+#Legenda do gráfico
+legend("topright", legend=c("Experimental data", "Page model"),
+       lty=c(NA, 1), 
+       col=c("black", "red"), 
+       lwd = 1:1, 
+       pch=c(1, NA), #pch: muda o símbolo
+       bty = "n") #tira o contorno da caixa da legenda
+```
+
+Gráfico de valores preditos x valores experimentais
+```{r}
+fitted.values(page)
+
+plot(y, fitted.values(page), 
+     xlab = "Valores preditos",
+     ylab = "Valores experimentais",
+     cex = 1.5)
+abline(0.00, 1, 
+       col = "red")
+```
+
+Modelo de NEWTON -- MR=e^(-kt)
+```{r}
+newton = nls(formula = y ~ exp(-k * x),
+             data= dados, start = list(k = 0.001), trace = TRUE)
+```
+
+Parâmetros
+```{r}
+summary(newton)
+```
+
+Avaliação do modelo
+```{r}
+r_newton <- cor(y, predict(newton))
+rmse_newton <- rmse(y, predict(newton))
+
+r_newton
+rmse_newton
+```
+
+Gráfico: dados experimentais e curva do modelo ajustado.
+```{r}
+#Dados experimentais:
+plot(dados, 
+     xlab = "Time (h)",
+     ylab = "Moisture ratio",
+     cex = 1.5)   #altera o tamanho do símbolo
+
+#Modelo ajustado
+curve((exp(-coef(newton)[1] * x)), 
+      add = TRUE, col = "green")
+
+#Legenda do gráfico
+legend("topright", legend=c("Experimental data", "Newton model"),
+       lty=c(NA, 1), 
+       col=c("black", "green"), 
+       lwd = 1:1, 
+       pch=c(1, NA), #pch: muda o símbolo
+       bty = "n") #tira o contorno da caixa da legenda
+```
+
+Gráfico de valores preditos x valores experimentais
+```{r}
+fitted.values(newton)
+
+plot(y, fitted.values(newton), 
+     xlab = "Valores preditos",
+     ylab = "Valores experimentais",
+     cex = 1.5)
+abline(0.00, 1, 
+       col = "red")
+```
+
+Modelo de MIDILLI -- MR=a*e^(-kt)+bt
+```{r}
+midilli = nls(formula = y ~ (a * ( exp(- k * x)) + (b * x)), 
+              data = dados, start = list(a = 1, k = 0.1, b = 0.01),
+              trace = TRUE)
+```
+
+Parâmetros do modelo
+```{r}
+summary(midilli)
+```
+
+Avaliação do modelo
+```{r}
+r_midilli <- cor(y, predict(midilli))
+rmse_midilli <- rmse(y, predict(midilli))
+
+r_midilli
+rmse_midilli
+```
+
+Gráfico: dados experimentais e curva do modelo ajustado.
+```{r}
+#Dados experimentais:
+plot(dados, 
+     xlab = "Time (h)",
+     ylab = "Moisture ratio",
+     cex = 1.5)   #altera o tamanho do símbolo
+
+#Modelo ajustado
+curve((coef(midilli)[1] * (exp(-coef(midilli)[2]*x)) + 
+         coef(midilli)[3] * x), 
+      add = TRUE, col = "red")
+
+#Legenda do gráfico
+legend("topright", legend=c("Experimental data", "Midilli model"),
+       lty=c(NA, 1), 
+       col=c("black", "red"), 
+       lwd = 1:1, 
+       pch=c(1, NA), #pch: muda o símbolo
+       bty = "n") #tira o contorno da caixa da legenda
+```
+
+Gráfico de valores preditos x valores experimentais
+```{r}
+fitted.values(midilli)
+
+plot(y, fitted.values(midilli), 
+     xlab = "Valores preditos",
+     ylab = "Valores experimentais",
+     cex = 1.5)
+abline(0.00, 1, 
+       col = "red")
+```
+
+Modelo de Henderson and Pabis -- MR=a*e^-kt
+```{r}
+hend_pabis = nls(formula = y ~ (a * ( exp(- k * x))), 
+              data = dados, start = list(a = 1, k = 0.1),
+              trace = TRUE)
+```
+
+Parâmetros do modelo
+```{r}
+summary(hend_pabis)
+```
+
+Avaliação do modelo
+```{r}
+r_hendpabis <- cor(y, predict(hend_pabis))
+rmse_hendpabis <- rmse(y, predict(hend_pabis))
+
+r_hendpabis
+rmse_hendpabis
+```
+
+Gráfico: dados experimentais e curva do modelo ajustado.
+```{r}
+#Dados experimentais:
+plot(dados, 
+     xlab = "Time (h)",
+     ylab = "Moisture ratio",
+     cex = 1.5)   #altera o tamanho do símbolo     
+
+#Modelo ajustado
+curve((coef(hend_pabis)[1] * (exp(-coef(hend_pabis)[2]*x))), 
+      add = TRUE, col = "red")
+
+#Legenda do gráfico
+legend("topright", legend=c("Experimental data", "Henderson and Pabis model"),
+       lty=c(NA, 1), 
+       col=c("black", "red"), 
+       lwd = 1:1, 
+       pch=c(1, NA), #pch: muda o símbolo
+       bty = "n") #tira o contorno da caixa da legenda
+```
+
+Gráfico de valores preditos x valores experimentais
+```{r}
+fitted.values(hend_pabis)
+
+plot(y, fitted.values(hend_pabis), 
+     xlab = "Valores preditos",
+     ylab = "Valores experimentais",
+     cex = 1.5)
+abline(0.00, 1, 
+       col = "red")
+```
+
+Modelo Logarítmico -- MR=a*e^-kt+b
+```{r}
+logar = nls(formula = y ~ ((a * ( exp(- k * x)))+ b), 
+              data = dados, start = list(a = 1, k = 0.1, b = 0.01),
+              trace = TRUE)
+```
+
+Parâmetros do modelo
+```{r}
+summary(logar)
+```
+
+Avaliação do modelo
+```{r}
+r_logar <- cor(y, predict(logar))
+rmse_logar <- rmse(y, predict(logar))
+
+r_logar
+rmse_logar
+```
+
+Gráfico: dados experimentais e curva do modelo ajustado.
+```{r}
+#Dados experimentais:
+plot(dados, 
+     xlab = "Time (h)",
+     ylab = "Moisture ratio",
+     cex = 1.5)   #altera o tamanho do símbolo     
+
+#Modelo ajustado
+curve(((coef(logar)[1] * (exp(-coef(logar)[2]*x)))+ coef(logar)[3]), 
+      add = TRUE, col = "red")
+
+#Legenda do gráfico
+legend("topright", legend=c("Experimental data", "Logarithmic model"),
+       lty=c(NA, 1), 
+       col=c("black", "red"), 
+       lwd = 1:1, 
+       pch=c(1, NA), #pch: muda o símbolo
+       bty = "n") #tira o contorno da caixa da legenda
+```
+
+Gráfico de valores preditos x valores experimentais
+```{r}
+fitted.values(logar)
+
+plot(y, fitted.values(logar), 
+     xlab = "Valores preditos",
+     ylab = "Valores experimentais",
+     cex = 1.5)
+abline(0.00, 1, 
+       col = "red")
+```
+
+Criar variáveis para armazenar os resultados de R e RMSE para depois criar um gráfico de barras e comparar a eficácia dos modelos. 
+
+Comparando os valores de RMSE entre os modelos
+```{r warning=TRUE}
+df <- data.frame(models = c("Page", "Newton", "Midilli", "Henderson and Pabis", "Logarithmic"),
+                 rmse_dados = c(rmse_page, rmse_newton, rmse_midilli, rmse_hendpabis, rmse_logar))
+
+ggplot(df, aes(y = rmse_dados, x = models))+ 
+  geom_bar(stat = "identity", width = 0.25)+     #width = largura da barra
+  #scale_y_continuous(limits = c(0, 1))+
+  theme_classic(base_size =  10)+
+  xlab("Models") +
+  ylab("RMSE")
+```
+
+
+Comparando os valores de CORRELAÇÃO (R) entre os modelos
+```{r}
+df <- data.frame(models = c("Page", "Newton", "Midilli", "Henderson and Pabis", "Logarithmic"),
+                 correlacao = c(r_page, r_newton, r_midilli, r_hendpabis, r_logar))
+
+ggplot(df, aes(y = correlacao, x = models))+ 
+  geom_bar(stat = "identity", width = 0.25)+     #width = largura da barra
+  scale_y_continuous(limits = c(0, 1))+
+  theme_classic(base_size =  10)+
+  ylim(0.0, 1) +
+  xlab("Models") +
+  ylab("Coeficiente de Correlação")
+```
+
+
